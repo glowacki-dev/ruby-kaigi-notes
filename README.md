@@ -1,5 +1,6 @@
 # Day 1:
-## Matz Keynote
+## Matz - Keynote
+### Notes
 Names are important (what was the proverb?) -> especially in programming
 
 Programming is not physical, it's made of concepts, behaviors. Good naming make a code more usable. Bad example would be `yield_self`
@@ -8,7 +9,7 @@ def yield_self
   yield self
 end
 ```
-it literally describes what it does -> Feature #14594 about better name for yield_self. How about "then"? It would chain nicely. (Matz doesn't really commit into the c ruby too often - he does for MRI - this was first commit in 5 years apart from versions bumps)
+The name literally describes what it does. Take a look at [feature #14594](https://bugs.ruby-lang.org/issues/14594) about better name for `yield_self`. How about `then`? It would chain nicely. (Matz doesn't really commit into the c ruby too often - he does for MRI - this was first commit in 5 years apart from versions bumps)
 
 Native Americans believe that knowing something/someone true name grants you control over them. The name has a certain power to it and is very important. Project's name can be really important. It can make people love the project. What if Ruby wasn't Ruby? What if Matz didn't come up with "ruby" in 1993 (?)... Nowadays ruby will not be a good name. Now we have google and ruby is already occupied by precious stones so people will have trouble finding it. It wasn't issue in 1993. But there are worse examples: "go" (great idea google), "swift" - they have very low "googlability". 
 
@@ -31,7 +32,7 @@ With all things mentioned earlier ruby gives you high productivity and a great c
 ### Q&A:
 1. **Q**: What about type definition? Look at TypeScript and JS. I don't like it. How will this be for ruby?
 
-   **A**: There will never be typing in ruby language definition. There is type annotation in python. Typing is useful for compiled languages, because it helps with finding bugs, but types can actually be recognized by computers automatically, so you won't have to defie static typing in language specification.
+   **A**: There will never be typing in ruby language definition. There is type annotation in python. Typing is useful for compiled languages, because it helps with finding bugs, but types can actually be recognized by computers automatically, so you won't have to define static typing in language specification.
 
 1. **Q**: Are there plans for high level constructs for ruby? Something like macros?
   
@@ -41,6 +42,60 @@ With all things mentioned earlier ruby gives you high productivity and a great c
 
    **A**: Because in the future type annotations will most likely be unnecessary and become obsolete so there is no point adding them.
 
-[Lunch break]
+## Aaron Patterson - Analyzing and Reducing Ruby Memory Usage
+### Intro
+Practicing Japanese = 👏
 
-## 
+Practicing Japanese on stage = 🙅
+### Notes
+We'll talk about two memory optimizations in Ruby:
+- Memory cache
+- Stack VM
+
+Let's start by finding memory usage issues. Since Ruby is written in C we'll look at C programs first. The first way (not very good one) is to look at the code. Better way is to use malloc stack tracing.
+
+In Ruby we can divide memory in two spaces. We've got GC allocated and ObjectSpace allocated memory. There is allocation_tracer for ruby which allows tracking Ruby allocated memory, but not anything outside. For this we can use Malloc Stack Logging.
+Malloc logging can grow really fast, as it contains information about all allocations and memory freeing. We can analyze those logs to know how much memory the program was using at the given time. We can also find out what was using the most memory.
+
+We can combine two techniques: "insterumentation" + "" to find out more about moemory usage.
+
+But first let's look at shared string optimization. This allows two different strings to reuse the same part of memory but only if they have the same end. Otherwise there will be a string copy created. Therefore if it's possible it's better to copy the string until the end and not trim it.
+
+Second thing to look at is `$LOADED_FEATURES`. It allows Ruby to keep track of files that were already required. But how do we know that two files are the same ones? We can use different paths for the same location. Also, if it's an array then searching it will be slow. But there is some smart caching going on that speeds up the process.
+
+[*Memory cache keys generation algorithm*]
+
+The problem was that the original algorithms was taking a substring. It actually had to create 8 new ruby objects for lookup of simple path like `/a/b/c.rb`. We can use shared strings to speed it up. We can even go further and get rid of ruby objects completely. Since the hash is already written in C we won't use Ruby hash, but instead point directly to C strings.
+
+With this change we've achieved 40% reduction in ruby objects creation. In real world Rails application we've saved over 4% of memory. This change will be available in Ruby 2.6
+
+Issue #14460. The same thing was proposed in #8158 (submitted 5 years ago) - always search for existing issues
+
+So how about the stack VM? How do we actually get instructions to execute?
+
+The code has to go through processing made out of parsing and compiling (where the bytecode is generated). There can be optimizations applied in the meantime. The first step is converting code into abstract syntax tree which is actually implemented with ruby objects. We then have to convert those into linked list of operations. The linked list is much easier to work with so there can be more optimizations applied here. The last step will be converting into bytecode which is as simple as representing our list nodes as a list of instructions (in a form of numbers, so we can't use ruby objcts here - we can use their addresses).
+
+We now know how compilation and code execution work.
+
+Since we're using ruby objects addresses in a program we can accidentially modify the original objects. To be sure we don't do this we can duplicate the objects. That's what `frozen_string_literal` doesn. It tells the VM that the strings can't get modified.
+
+We also have to be aware of another problem. Since the strings are both C strings and Ruby objects they can be garbage collected while the C internals still need those. That's why we have mark arrays which keep track if objects are still used. But it duplicates some information, because both the array and instructions list point to the object. Also, the more objects we track the bigger the aray have to be and there can leave us with some unused memory space for the lifetime of the program.
+
+Caould we change array into something else? We can actually mark objects directly from the VM. It's called Direct Marking Technique (#14370). How does in impact our programs. It reduces number of allocated arrays, and number of allocated objects. Overall it saves you around 6% of memory (depending on how much code you have). Also available in Ruby 2.6.
+
+Upgrade to Ruby 2.6!
+
+### Q&A
+
+[No time for Q&A]
+
+## A practical type system for Ruby at Stripe
+
+## All About RuboCop
+
+## RubyGems 3 & 4
+
+## Architecture of hanami applications
+
+## Lightning talks
+
