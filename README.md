@@ -214,7 +214,49 @@ What needs to happen before rubocop 1.0 will be released?
 
 [No time left for Q&A]
 
-## RubyGems 3 & 4
+## Shibata Hiroshi - RubyGems 3 & 4
+
+### Intro
+
+Ruby core and rubygems developer
+
+Asakusa.rb - Rubyis group in Japan
+
+Slides are [available here](https://www.slideshare.net/hsbt/rubygems-3-4)
+
+### Notes
+
+We'll start with RubyGems version 2.7. Previous versions only have security fixes, while 2.7 is a stable version and gets both bugs and security fixes.
+
+RubyGems supports Ruby down to 1.8, which is a really obsolete version by now. There are a lot of Ruby versions to support, so there is a big build matrix for rubygems on CI.
+
+Support for ruby 1.8 is mainly done by using `respond_to` in a lot of places. There are also two versions of rubygems: independend and bundled in ruby. The second one needs additional checks to make sure that things like bundler are available.
+
+How rubygems installs bundler? If you look at `update_rubygems/setup.rb` you'll se how it adds bundler to default gems.
+
+In the end sometimes rubygems and bundler are installed together while at other times they can be installed separately (depending on versions). This used to cause a lot of problems in certain environments (such as Travis CI). This was ultimately fixed in colaboration with travis team.
+
+RubyGems security is handled by hackerone - 3 people handle vulnerability issues.
+
+Since the project is tightly coupled to specific versions of other projects in causes some problems with maintaining code on git.
+
+What's coming with rubygems 3.0?
+
+Introduction of `Gem::Deprecate`, an easy way to show deprecation warnings to gem's end-users.
+
+Way of searching code in gems with `gemsearch`. Using `all-ruby` to check ruby version compatibility. Those tools can be used to get rid of workarounds for older ruby versions.
+
+Used tools have been updated and support for missing bundler have been added - it could be installed automatically now.
+
+What's up with rubygems 4?
+
+Changes to how gems are installed. Better support for standard libraries defaults.
+
+Rubygems 4 will install to `~/.gem` by default so there will no longer be errors about not having root access. But what about compatibility with things like rbenv?
+
+ ### Q&A
+
+[No time for Q&A]
 
 ## Architecture of hanami applications
 
