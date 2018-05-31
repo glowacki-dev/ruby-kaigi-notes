@@ -91,6 +91,82 @@ Upgrade to Ruby 2.6!
 
 ## A practical type system for Ruby at Stripe
 
+### Intro
+
+Focusing at developer productivity. No Rails, a few macroservices, new code in existing services. Bulding upon existing type checkers (such as DRuby, PRuby, RubyDust).
+
+Stripe's type checker is still not open source but there are plans to open source in the future. It's being tested internally. Check it out now at https://sorbet.run
+
+### Notes
+
+How do we start designing a type system for language like Ruby? 
+
+It has to be explicit but useful at the same time. It should be rewarding for developers to use it. It's actually easy to build a complex type system, but it's worth trying to make is as simple as possible. 
+
+Another important point is compatibility. We'd like our type system to be ruby based and work seamlessly with existing core and libraries. This would also alow gradual adaptation.
+
+Another problem is that we want the type checker to be truthful. Due to Ruby nature some objects can for example become nillable or non-nillable at some point. We should be aware of this. The same goes for dead, unreachable code. Or for union types. Stripe's solution covers all those cases.
+
+Ok, so how do we declare it? Keep in mind we want to use a valid Ruby syntax.
+
+[There will be an image here later 😬]
+
+There are obviously different strictness levels. The lowest one will only look for syntax errors while the highest one will not allow to execute code with possible types mismatch. It could be used for some critical parts of application.
+
+So does this actually work and is it useful?
+
+It's currently being adopted into Stripe codebase. There were some bugs and suggestions found along the way:
+
+- Typos in error handling - that's sometimes tricky to find in a real application, because your error will not be handled where you want it to. Type ckecking helps with this
+
+- nil checks - some methods require non-nil object so we have to remember to check for nil before using them. Type ckecker helps finding this pattern.
+
+- Using instance variables from static methods - think something like this:
+
+  ```ruby
+  class Foo
+    def initialize
+      @bar = 'bar'
+    end
+  
+    def self.baz
+      @bar
+    end
+  end
+  ```
+
+  It obviously won't work but is a common error 
+
+- Unreachable code in unexpected places - sometimes by accident you can write code that won't ever be executed due to how language works. Type checker can find a lot of those
+
+Stripe's type checker can check up to 100k loc/s which is much faster than other similar tools (also in other languages). How was this speed achieved? The checker was actually written in C++ not in Ruby. There is a speed gain but at the cost of loosing metaprogramming suport. Some basic patterns have been reimplemented, but for others the reflection mechanism is used.
+
+Right now there is only a demo mentioned above. Once the final open source version is released it will be notified on the blog. If you have some feedback or ideas send it to sorbet@stripe.com 
+
+### Takeaways
+
+* Working type ckecker
+* Fast and easy to use
+* Will be released soon
+
+### Q&A
+
+1. **Q**: Many Ruby programmers use C where you define type in method definition. Should we have something similar for Ruby?
+
+   **A**: Not like in Ruby
+
+2. **Q**: How does your type annotation go with what Matz talked about type annotations becoming obsolete?
+
+   **A**: Type annotations are useful NOW, it's no point waiting.
+
+3. **Q**: How about typing based on YARD?
+
+   **A**: There is a tool to translate YARD declarations into type annotations
+
+4. **Q**: How about Rails? How about libraries with no type annotations?
+
+   **A**: A lot of community code used in codebase. That's where reflection mechanism can help. It provide at least some partial support until type annotations get added there.
+
 ## All About RuboCop
 
 ## RubyGems 3 & 4
