@@ -317,3 +317,97 @@ Look at [dry-rb](http://dry-rb.org) for some helpful libraries
 
 ## Lightning talks
 
+### From String#undump to String#unescape
+
+`#undump` is a new method in Ruby 2.5. It's a reverse of `#dump`
+
+`#undump` is useful because it uses the same notation as other languages. It can be used for example for reading nginx logs, because it uses escaped urls there. But undump will not actually work for your regular strings because it must be wrapped in double quotes - otherwise it will raise na exception. 
+
+To work around the issue let's make a simple `string_unescape` gem that hacks around this issue and properly wraps sting to make it work with `undump`
+
+### Create libcsv based ruby compatible CSV library
+
+Using libcsv is faster and is a widely used standard. Making it ruby/csv compatible should allow backawards compatibility and keep the code easy to understand. CSV files are used quite often so it's important to work on it's performance.
+
+Due to libcsv implementation, increasing amount of columns will drastically reduce performance, while increasing amount of rows won't have so big of an impact.
+
+Libcsv only supports ASCI, it lacks support for multibyte characters.
+
+### Rib console and plugins to make you happier
+
+Rib is replacement for irb. Written only in Ruby and maintained for 7 years now. It's faster than irb (or at least not slower - looking at you pry). It has some plugins for extra stuff. 
+
+`beef` - starting rails console takes a long time. `beef` will make a sound when it starts
+
+It also has support for things like multiline history 👏
+
+It also lets you to seamlessly use your editor (like vim or emacs) for writing longer pieces of code
+
+Some plugins give some basic debugging support.
+
+Find it at https://github.com/godfat/rib
+
+### Improving JSON methods performance
+
+(Not sure what was the actual title)
+
+Parsing json with `JSON.parse` will always return keys as strings. Internally freezing objects let's you remove some memory pressure from strings duplication. It gived 19% performance improvement with a very simple fix. 
+
+Other method was `JSON.generate`. There were some unnecesary conversions done internally (changing hash keys to arrays to iterate them). Some other optimizations were added to skip unnecesary methods calls and objects conversion (no need to convert a string that's already ASCII). This change gived 3.5x speed boost. 
+
+Those improvements are still waiting to be merged in pull requests [#345](https://github.com/flori/json/pull/345) and [#346](https://github.com/flori/json/pull/346)
+
+###Improve Red Chainer and Numo::NArray performance
+
+[Red Chainer](https://github.com/red-data-tools/red-chainer) was using numpy under the hood. And simply by making them use same types at same places allowed 1.7x speed improvement. Moving where some operations are executed between the libraries allowed further speedup.
+
+### Using Tamashii Connect - Real World with Chatbot
+
+[Tamashii Bluetooth](https://github.com/tamashii-io/tamashii-bluetooth) helps building IoT with ruby and Raspberry Pi.
+
+### Find out potential dead codes from diff
+
+Finding unusable code is hard. There are soultions like debride, but they have a lot of false-positives and there is no DSL for this. We'll only focus on reducing false-positives.
+
+First we'll create list of potentially unused methods and after some changes we'll have another list. We can extract only ones that were introduced by new commit (new list - old list). It makes it easy to use in CI environment. On the other hand we won't be able to check the whole project because it's fitted for regular checks.
+
+It actually also helps with finding refactoring mistakes. If you rename methods and forget to change one name, it should find those methods.
+
+By using diff we can build upon existing solution and reduce false-positives rate
+
+https://github.com/riseshia/deathnote
+
+### Test asynchronous functions with RSpec
+
+Writing and testing synchronous code is easy. Butwhen we start using websockets we enter the asynchronous world. this can be approached with event loop model architecture (EventMachine for ruby). But it brings a new problem. Spending too long in one function will block all subsequent events.
+
+Asynchronous functions run in threads and aren;t blocking the main thread. But how do we test it with RSpec? RSpec has `async_func` keyword which lets us do exaclty this. But it doesn't always work as expected... [out of time]
+
+### To refine or not to refine
+
+Let's talk about Ruby refinements. They allow extending a class locally. They've been an experimental feature until Ruby 2.1. 
+
+They can be used to reduce some code dependencies. It let's you avoid monkey patching without changing your existing code. Another use case is adding methods available in new versions to older versions of libraries or language. 
+
+But they have some strange behaviors and can cause different problems.
+
+Refinements can be useful when writing gems but not so much for application code.
+
+### 5-Minute Recipe of Todo-app
+
+How do you create a todo app in 5 minutes? Well it's almost impossible so we'll already have an existing app to get started and will copy snippets from there.
+
+[Demo of creating a web application with [hyalite](https://github.com/youchan/hyalite)]
+
+###Symbolic Execution of Ruby Program
+
+Type checkers require extra work while developers are easy and want to write less code. We can extract type definitions from tests, but then we have to write tests. Maybe we can auto generate test cases?
+
+That's what symbolic execution could give us. It builds constraints for all possible cases and then tries to solves for them. [KLEE](https://klee.github.io) - symbolic execution made at Stanford. Using it requires us to compile ruby program into LLVM bytecode. We can then use this to use KLEE on our code.
+
+### Schrödinger branches 
+
+[Got a bit lost here 🙉]
+
+Development branch on Ruby has lots of comments that can actualy revert each other. Every Christmas there will be a new branch created and new versions will be created on every one of them. It get's hard to maintain quickly so we have to slowly end life of old branches. 2 versions behind become security maintained only and older ones become EOL. This means that some ruby is indeed dying every year. But how do we know if the old version is actually dead if we never get a commit that indicates this.
+
