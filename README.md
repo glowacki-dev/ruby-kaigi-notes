@@ -258,7 +258,62 @@ Rubygems 4 will install to `~/.gem` by default so there will no longer be errors
 
 [No time for Q&A]
 
-## Architecture of hanami applications
+## Anton Davydov - Architecture of hanami applications
+
+### Intro
+
+Ask questions on mail@davydovanton.com with RubyKaigi2k18 in title
+
+You can read more about [those concepts here](https://github.com/davydovanton/hanami-architecture)
+
+### Notes
+
+Let's start by talking about problems. There are 3 types we can find: management, performance and maintenance. We'll focus on the last one.
+
+It's a hard topic, because things like "good architecture" are hard to measure and agree upon. Let's look at ways to improve existing code by introducing some levels of abstraction to it.
+
+Following good patterns lets us test code much easier. For example by avoiding global state we can use dependency injection.
+
+But with abstractions we start to get a lot of objects and a lot of nested names. How do we handle them? And do we really have to initialize those objects every time?
+
+This is solved by next level of abstraction - containers. We can use `dry-containers` for this. This way alll global state is managed from a single place and allows some memorization to improve performance.
+
+But we can improve upon it with interactors and autoinject.
+
+Then, we have models. We don't want logic and validation in models. They will simply save and read the data.
+
+Even higher layer is application. We can actually have different applications that reuse same models and services. Think about separate applications for administrator panel. In typocal hanami approach you'll have different applications sharing common libraries. Instead of actions caling your interactors and executing some logic, you can actoally have different applications doing this. With such approach it's easier to create something like admin panel. But we have to remember about other apps using the same code so we don't break compatibility.
+
+There are some more things you can look on, but your application will be good without them:
+
+* dry-systems 
+* domains
+
+Your typical hanami project will consist of many applications interacting with some domains which have access to your private code.
+
+The last idea we'll talk about is an event sourcing patern. When creating separate applications the won't access the database directly. Thel will only broadcast events that will be stored in event log. Then, everything from event log will be processed - such action can be read multiple times by different services. For extracting the data we cen use CQRS (Command Query Responsibility Segregation)
+
+> At its heart is the notion that you can use a different model to update information than the model you use to read information ~Martin Fowler
+
+Hanami implements above ideas which may help writing cleaner, more maintainable code. But it is not a silver bullet and can be really hard to get started with.
+
+### Takeaways
+
+Isolate your business logic
+
+Don't use things you don't undestand (only use what you know you need)
+
+Look at [dry-rb](http://dry-rb.org) for some helpful libraries
+
+### Q&A
+
+1. Q: Why do we need repositories in Rails?
+
+   A: Rails models have too much logic in them. It would be better to extract this logic elsewhere
+
+2. Q: What are pros and cons of repositories?
+
+   A: It's easier to find implementation and test things. You can simply stub out repository with whatever you want. On the other side you add one more abstraction to your application. It's also hard to add another concept like this into rails application.
 
 ## Lightning talks
 
