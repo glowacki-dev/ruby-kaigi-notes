@@ -167,7 +167,52 @@ Right now there is only a demo mentioned above. Once the final open source versi
 
    **A**: A lot of community code used in codebase. That's where reflection mechanism can help. It provide at least some partial support until type annotations get added there.
 
-## All About RuboCop
+## Bozhidar Batsov - All About RuboCop
+
+### Intro
+
+Great stuff about Bulgaria 🇧🇬
+
+Ruby & Rails Community Style Guides
+
+Actually the first time speaking about RuboCop
+
+### Notes
+
+Why should you use something like rubocop?
+
+* Keeping codebase consistent
+* Saving developers time
+* Helping Ruby language and community
+  * Efficient way to update codebase (cops for finding obsolete code)
+
+>  Lint tools **are not** a replacement for common sense
+
+Over 300 open issues - volunteers needed 💪
+
+@bbatsov's first gem ever - learning to work with RubyGems int the beginning
+
+First versions of rubocop were using regular expressions, but were ultimately updated so it uses proper language parsing now. There is a tool called Ripper in ruby which lets you see how ruby reads your code but it is tied to MRI, not cross platform and had missing documentation. Since it was tied to MRI it was also tied to specific ruby version. It doesn't go well with rubocop tying to be cross platform.
+
+When struggling with Ripper quirks finding `parser` gem, which solved a lot of problems. It was cross-platform, had good documentation and supported a lot of ruby versions. It showed nicely formatted syntax and had an option of rewriting code. But it was a new project with no real world usage yet. Rubocop used parser since version 0.8
+
+Since then it got a lot of useful features like caching, parallel execution etc. It now has very rich configuration options for all available cops which lets you use it in any project you want. And everything is described in the [documentation](http://rubocop.readthedocs.io).
+
+Rubocop has evolved from simple linter into a full featured code formatter.
+
+Writing cops is as simple as writing a few methods so it's easy to add ones you need for your internal projects.
+
+What needs to happen before rubocop 1.0 will be released?
+
+- Removing rails specific cops (and maybe performance ones) from rubocop core
+- Moving repository from bbatsov into rubocop hq organization on github
+- Reviewing all configs and their defaults
+- Comming up with a better process of cops updates (curently, `mry` can be used to ease the process)
+- Resolving all potentil breaking changes in cops API
+
+### Q&A
+
+[No time left for Q&A]
 
 ## RubyGems 3 & 4
 
