@@ -247,3 +247,61 @@ What will the future bring us? Kubernetes will become a standard way of controli
 1. **Q**: What will be the usecase of running 10k containers on a single server?
 
    **A**: [The answer was in Japanese, so I can't help you here]
+
+## Yusuke Endoh - Type Profiler: An analysis to guess type signatures
+
+### Intro
+
+"Leraning Ruby by writing Ruby interpreter in Ruby"
+
+Ruby 2.6 will support endless ranges `(1..)` and it will allow to do something like this `some_array[3..]` to extract from 3rd element to the end of array. How about beginless range? See [#14799](https://bugs.ruby-lang.org/issues/14799)
+
+### Notes
+
+We'll talk about upcoming Ruby 3 type systems and what we already know about it.
+
+First take a look at proposed type systems for ruby. We've got things like
+
+- Steep (static)
+- RDL (semi static type checking)
+- contracts.ruby
+- dry-types
+- RubyTypeInterference by JetBrains
+- Sorbet by Stripe
+
+We'll focus on [RDL](https://github.com/plum-umd/rdl) because it is the most famous in academic world. 
+
+![rdl_basics](media/rdl_basics.jpg)
+
+RDL actually allows you to decide when the type check will happen. It can be performed ad definition, execution or never for any single method. But it has it's issues for example when working with instance variables. It quickly requires you to write lots of annotations. And even when you set typecheck to `nil` it will still be performed sometimes - during dynamic checking.
+
+What about methods in ruby that return meaningles values? A lot of methods we write return values that are not intended to be used for anything. What should be define here? `%any` or maybe explicitly start returning `nil`? It seems like a `void` type will be needed.
+
+So RDL is a semi static type checker with configurable timing. It's a mature project which supports meta programming. It still needs type annotations however.
+
+Moving on to Steep. We've already heard about it in a [previous talk](#).
+
+contracts.ruby is based on contracts (as the name suggests) and requires writing annotations in code.
+
+Then we have RubyTypeInterference which is used in RubyMine for types interference.
+
+Overall, Steep seems to be the closest to meet all the requirements mentioned by Matz at some point. But there is a problem with meta programming when using that approach.
+
+![type_systems](media/type_systems.jpg)
+
+Let's talk about another approach then. Type Profiler. It's another way to extract type information from Ruby code - kind of like RubyTypeInterference. But it's not interference (as this doesn't work good for ruby), but more like "guessing".
+
+Additionally, since neither static nor dynamic type profiler can cover all use cases, we should think about having a variety of profilers. We can look at 3 different possible type profilers.
+
+#### Static Analyzer 1:
+
+Look at available methods and method calls for each parameter and assign a class that matches all calls. Evaluating this approach in real world showed that it fails in some cases. For example sometimes parameters are not used - this won't work then. Another problem is when multiple classes match - we end up with incomplete guess. With good heuristics we could try guessing correct type based on parameter name. Last problem with this approach is that it won't be able to guess the return value of method.
+
+#### Static Analyzer 2: 
+
+Looking at what happens to the parameter we can try to assume it's type based on standard types. For example `Num#+` would require another `Num`. When there are multiple matches we can create a union of types. It has a good improvement of guessing types of objects that are not receivers, but it can cause some wrong guesses in the end.
+
+#### Dynamic Analyzer:
+
+The idea is to use TracePoint API to guess parameters types. Even though it works quite well it can significantly slow applications. It doesn't have a way of guessing void returns, which could be done with static analysis and heuristics. 
+
