@@ -76,3 +76,29 @@ Nowadays it's possible to use mature, well known tools written in Ruby to handle
 
    **A**: The answer may be similar to the previous one. Most people probably thought that it's not the best language for the job
 
+## Koichi ITO - Improve Ruby coding style rules and Lint
+
+### Intro
+
+Contributions to Rails, recently a lot of work in RuboCop (writing new cops)
+
+RubyKaigi 2007 - talk on welcoming new people
+
+Rubocop is organized around departments and cops - an analogy to how the police works. If there is not a cop that you need, you can easily write your own.
+
+### Notes
+
+Whats the difference between style and lint?
+
+It's hard to define a style. There are many different coding styles (Minero Aoki, Shugo Maeda, Ruby Style Guide). RuboCop implements Ruby Style Guide by default. There are options allowing to change it's default behavior. Feel free to change the defaults to fit your needs. However, some options are missing and can't be easily changed in RuboCop.
+
+And now about lint. This focuses on things that can turn into bugs or is about things like code duplication. There will be a new lint cop in Ruby 2.6. For example interface of ERB changes in 2.6. It will now expect keyword arguments in initializer. 
+
+What's difference between `ruby -w` and RuboCop? RuboCop works before execution, while you'll have to actually execute the method for the `-w` option.
+
+When doing code review and spotting an obvious offense it may be a good idea to create a cop for it so others could avoid the same mistake. Creating a new cop is really easy. You use a generator and write appropriate methods which instruct rubocop for patterns to match. Rubocop also gives you tools ot generate updated documentation. You can then create a pull request to rubocop so others could use your cop as well.
+
+The more people use your cop the more likely you are to find bugs and edge cases in it. Since RuboCop doesn't have a pre-release version the cop will be used by a lot of people once it's accepted.
+
+For example let's take a custom cop created by rails and used in their repository. After exporting it to RuboCop repository it would be possible for anyone using rails to keep the same style. Then, rails could drop their own implementation and actually use one that comes with rubocop. This allows whole community to write better code.
+
