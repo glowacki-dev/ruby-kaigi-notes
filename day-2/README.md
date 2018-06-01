@@ -102,3 +102,69 @@ The more people use your cop the more likely you are to find bugs and edge cases
 
 For example let's take a custom cop created by rails and used in their repository. After exporting it to RuboCop repository it would be possible for anyone using rails to keep the same style. Then, rails could drop their own implementation and actually use one that comes with rubocop. This allows whole community to write better code.
 
+## Julian Nadeau - Scaling Teams using Tests for Productivity and Education
+
+### Intro
+
+Developer productivity team at Shopify
+
+The presentation assumes you work with CI
+
+### Notes
+
+There are many different mistakes that can be made:
+
+- Forgetting a `require`
+- Including a gem that is similar to what is already there
+
+But we won't focus on mistakes themselves, but rather on their impact on developers. When people have too many rules at the same time they may experience congitive overload where they won't be able to follow them at all. And the larger the organization the worse that problem may become. We need a way to help people avoid mistakes without explicitly telling tham what they can/cannot do.
+
+We should try to automate all tedious tasks or the developers will be left with a list of pointless things to do. It's counterproductive and still prone to human error. And this may end up in your application being broken.
+
+We use tests to avoid repeating logic or project errors in the future. But what about human errors?
+
+There are a few important steps to fixing the problem:
+
+1. Identify the problem
+2. Determine if you can automate it
+3. Make a test to educate developers
+
+Example of a mistake may be wrong filename. For example when creating the file `some_task.rb` you're expected to create `some_task_test.rb`. Otherwise the CI will break. And you can actually write a test for this, right? It's as easy as looking for all `*_task.rb` files and checking if they have associated tests. Remember to add some useful message so the developer will know how to fix the issue. This will not only help the developers fix the issue, but also prevent them from pushing untested code to production.
+
+Sometimes we may want to ban usage of specific gem or pattern. To do this we can create a "shitlist" which will list all offenses currently present int the project and slowly work on removing items from it. Now, we also write a test for this so if somebody adds some gem or pattern that we're trying to get rid of we'll notify them.
+
+Such examples can be actually tested with your testing framework of choice. You don't have to only use them to test the code logic, but you can check the project with them as well. But those tests can become complex, so you can use some libraries that will help you such as Ripper API for code parsing, or Bundler API to check dependencies. But some tests may be as easy as reading filenames etc.
+
+Another good way to tackle some probles is using style guides. A good choice may be using RuboCop to make sure that the code style is followed. Even though no single code style is more "right" than others, but it keeping it unified helps with development process.
+
+![jit_education](media/jit_education.jpg)
+
+Last think we'll talk about is Just in Time education. JIT here has a similar meaning to JIT compiling. It means that you don't educate people before they need the knowledge (or after), but exactly at the moment when they're about to make a mistake. That's actually exaclty what good tests will do. JIT education will therefore be made of following steps:
+
+1. Detect that user doesn't know something
+2. Explain what's the problem and how to fix it
+
+Keep in mind to have helpful error messages. Example of bad message will be "A file `foo.rb` needs to have a test", because user may have written a test but named it wrong. It's better to say "A file `foo.rb` should have a test file named `foo_test.rb` but it wasn't found". Another thing to keep in mind is to explain why they need to to this, because nobody likes following rules blindly. And if possible try to suggest the correct solution.
+
+We may actually take it a step further. Have you ever gotten an useless error from `bundle install`? It's possible that other people will have similar problems. We can try to make a wrapper that will format such errors nicely. Take a look at this [wrapper for bundler](https://github.com/jules2689/extended_bundler-errors)
+
+Since version 1.13 bundler has support for plugins. They can be used for banning some gems or checking their sources.
+
+### Takeaways
+
+- Unit tests are not just for logic - use it for testing the project for human errors
+- Rubocop can help enforce uniform code style
+
+### Q&A
+
+1. Q: Do you think that it's possible to write generic JIT education messages or will they be like the example you shown?
+
+   A: The `rmagic` wrapper for bundler was a very specific case
+
+2. Q: How would you approach microservices architecture?
+
+   A: It depends on the project. You can either keep track of all of them globally or treat each one individually.
+
+3. Q: Do you encourage developers to install RuboCop?
+
+   A: No, we run it in CI and only on code that changed.
