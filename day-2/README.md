@@ -157,14 +157,52 @@ Since version 1.13 bundler has support for plugins. They can be used for banning
 
 ### Q&A
 
-1. Q: Do you think that it's possible to write generic JIT education messages or will they be like the example you shown?
+1. **Q**: Do you think that it's possible to write generic JIT education messages or will they be like the example you shown?
 
-   A: The `rmagic` wrapper for bundler was a very specific case
+   **A**: The `rmagic` wrapper for bundler was a very specific case
 
-2. Q: How would you approach microservices architecture?
+2. **Q**: How would you approach microservices architecture?
 
-   A: It depends on the project. You can either keep track of all of them globally or treat each one individually.
+   **A**: It depends on the project. You can either keep track of all of them globally or treat each one individually.
 
-3. Q: Do you encourage developers to install RuboCop?
+3. **Q**: Do you encourage developers to install RuboCop?
 
-   A: No, we run it in CI and only on code that changed.
+   **A**: No, we run it in CI and only on code that changed.
+
+## Soutaro Matsumoto - Ruby Programming with Type Checking
+
+### Intro
+
+[Steep gem](https://github.com/soutaro/steep) is a gradual typing for Ruby, but it's still only a PoC. It uses anotations as comments. Version 0.3.0 was released yesterday with a lot of improvements.
+
+### Notes
+
+Steep uses a different approach than Sorbet - another typing solution for Ruby. It's slower, but there is probably some place for improvement.
+
+![steep_sorbet_comparison](media/steep_sorbet_comparison.jpg)
+
+To use steep you write methods and classes definitions separately from their implementation. It lets you describe method arguments and return value. Types can be nillable, for example by declaring them as `String | nil`.
+
+Another feature available in Steep are interfaces. They allow you to define common logic between classes.
+
+[Demo of writing some code with type checking using Steep]
+
+Steep will use the definition file to make sure you're passing correct objects into methods. It's also aware of available methods so you won't be able to call a method that hasn't been implemented.
+
+Using steep for type ckecking is done in 3 steps:
+
+1. Writing signatures
+2. Writing code with annotations
+3. Running type checker
+
+Even with a lot of metaprogrammig, steep should be able to correctly handle everything that's going on.
+
+To make it faster to add steep to the existing projects, there is a scaffolding option that will generate a default class definition file. 
+
+[Demo of adding type checking to existing Rails application]
+
+### Q&A
+
+1. **Q**: Why did you drop the idea of automatic type interference? (mentioned in previous talk)
+
+   **A**: I decided it'll be better if programmers wrote all the types to have more control over it
