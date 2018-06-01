@@ -206,3 +206,44 @@ To make it faster to add steep to the existing projects, there is a scaffolding 
 1. **Q**: Why did you drop the idea of automatic type interference? (mentioned in previous talk)
 
    **A**: I decided it'll be better if programmers wrote all the types to have more control over it
+
+## Uchio KONDO - How Ruby Survives in the Cloud Native World
+
+### Notes
+
+Web applications are moving in direction of containerization, distribution etc. But why now?
+
+Problems with existing containers runtime:
+
+- hard to manage
+- needs restart to change resources
+- hard to upgrade
+
+Solution was to create custom container runtime with mruby. It's available as [haconiwa gem](https://github.com/haconiwa/haconiwa).
+
+After the gem creation it became much easier to configure containers with Ruby DSL. But how was it different or better from existing solutions like LXC or Docker? It needed some sort of a distinctive feature. It actualy has two such features that work together:
+
+1. Composability - it can combine many container functionalities
+2. Extendibility - it has hooks which alow to extend container lifecycle
+
+It also semed that haconiwa had a lot of hosting-friendly features, and after some time the new project to create haconiwa based hosting was brought to life. To fully utilize this a new "FastContainer" architecture was used. It provided that container will be available on the first request and will be running as long as needed. After it's lifetime ends it will be killed and brought to life once it's needed again.
+
+This is useful for hostin architecture, because container only use resources when tey're needed. Additionally, since they have limited lifetime they can't grow too big. 
+
+[Example of FastContainer code]
+
+To gain even more control over resource allocation, the orchestration stack had to be reimplemented. It ended up being all in Ruby, with help of ngx_mruby and haconiwa.
+
+![haconiwa_comparison](media/haconiwa_comparison.jpg)
+
+Finally the hosting is running bunt there is issue of container efficiency. How many containers can we run on a single machine? The goal was to have as many as 10k containers in one host. It was challenging for a few reasons boiling down to lower level issues like bridge count being limited to 1024 and slow namespace creation due to using older iproute2.
+
+The next step is Cloud-Native for Ruby. Ruby seems like a good choice for it, because it's syntax is easy even for non-developers, which is a wanted feature in modern teams. Apart from that we have a choice between CRuby and mruby - each of them having their own strengths. One thing that was needed was Remote Procedure Call for Ruby. gRPC does this but not for mruby. Another obstacle was utilizing multiple cores. Currently, the only good way to do this in Ruby is with forks. In the future Guild may be a solution for this.
+
+What will the future bring us? Kubernetes will become a standard way of controling containers, but many applications may actually use serverless architecture. In the near future it will be possible tu run haconiwa under kubernetes. It should be possible to create a cloud-native solution with mruby in the future.
+
+### Q&A
+
+1. **Q**: What will be the usecase of running 10k containers on a single server?
+
+   **A**: [The answer was in Japanese, so I can't help you here]
