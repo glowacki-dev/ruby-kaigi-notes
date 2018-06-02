@@ -242,3 +242,33 @@ It's worth noting that ISeq binary is expressed as C structures and there may be
 To dive into ISeq further we could create another tool - [YASM](https://github.com/ko1/rubyhackchallenge/tree/master/yasm) which helps us working with ISeq Simple Data Formats objects.
 
 What would ISeq standarization bring us? With proper documentation it would be possible to run different languages on RubyVM, but it would also enable other virtual machines to be implemented. Just like there are many languages running on JVM and there are many languages compiling into LLVM. This could open way for new ruby dialects (such as one with types definitions) or VMs specialised in one selected task (data processing etc).
+
+## Vladimir Makarov - "Three Ruby performance projects"
+
+### Notes
+
+Talk will be divided into 3 parts:
+
+1. Improving CRuby Floating Point operations performance
+2. RTL Update [#12589](https://bugs.ruby-lang.org/issues/12589)
+3. Light-weight JIT
+
+CRuby uses a mechanism called tagged values. Pointers to heap always end with `000` while Fixnum ends with `1` and floating point end with `10`. This means that we're only left with 62 bits for 64 bit IEEE double. How do we fit it?
+
+CRuby actually fixes 2 bits to the specific value so they can be used as tag. This means that there must be some transformation performed in order to extract the real value. But the code for this is quite complex with many branches that prevent JIT optimizations.
+
+By modifying how those fixed bits are encoded we could get rid of the branching in a code, which would allow some optimizations to take place. This simple changed gave a visible performance boost for applications making havy use of floating point numbers.
+
+![ruby_floats](media/ruby_floats.jpg)
+
+Second project was RTL update. The way compiler executes instructions can be changed from stack based into register transfer approach. It helps simplify some method executions and reduce VM overhead. The speedup of up to 2x would be noticable in almost all use cases and it only adds up to 1% of compilation time.
+
+The last one was creating a lightweight JIT. MJIT has smaller footprint that other solutions like JRuby or Graal, but is still noticable. We could add another, lighter JIT alongside MJIT and make them work in two tiers. To help with this the universal JIT based on MIR (Medium Internal Representation) has been created.
+
+How can we achieve our performance goals when creating a lightweight JIT? We should focus only on most valuable and frequent optimizations. When we have a choice of algorithm we should choose one with best combined performance and simplicity. The best optimizations for GCC are a decent RA and code selection. Those two only can give us 80% performance boost.
+
+![gcc_optimizations](media/gcc_optimizations.jpg)
+
+With current MIR implementation it is hundreds of times faster to compile code when compared with gcc while execution time is almost the same. With JIT based on MIR we could see hundreds of times faster startup with simmilar gains in terms of generated code size. It will however generate more lines of code in C.
+
+Future plans include implementing C to MIR translator and trying MIR Generator in CRuby MJIT. Other missing features are things like function inlining which should be added in future as well.
