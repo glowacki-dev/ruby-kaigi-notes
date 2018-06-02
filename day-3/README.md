@@ -40,17 +40,17 @@ Try out TruffleRuby by installing it with your ruby manager of choice.
 
 ### Q&A
 
-1. Q: The setup time for TruffleRuby is but. Are there any plans to improve startup performance?
+1. **Q**: The setup time for TruffleRuby is but. Are there any plans to improve startup performance?
 
-   A: We want to improve on this and there are some works already in progress. Loading code is indeed slower than it should be and improving this will be the next step.
+   **A**: We want to improve on this and there are some works already in progress. Loading code is indeed slower than it should be and improving this will be the next step.
 
-2. Q: Is Partial Evaluation done by you or is there some framework for this?
+2. **Q**: Is Partial Evaluation done by you or is there some framework for this?
 
-   A: This is similar approach to what has been used for JavaScript. Actually AST interpreter doesn't care about the language.
+   **A**: This is similar approach to what has been used for JavaScript. Actually AST interpreter doesn't care about the language.
 
-3. Q: How does the memory usage differ between the implementations?
+3. **Q**: How does the memory usage differ between the implementations?
 
-   A: SubstrateVM has bettter memory usage than JVM version.
+   **A**: SubstrateVM has bettter memory usage than JVM version.
 
 ## Keita Sugiyama, Martin J. Dürst - "Grow and Shrink - Dynamically Extending the Ruby VM Stack"
 
@@ -92,15 +92,56 @@ We have to keep in mind that ruby memory is managed in four layers. Apart from R
 
 ### Q&A
 
-1. Q: What methods exist for possible speed improvements?
+1. **Q**: What methods exist for possible speed improvements?
 
-   A: In current implementation the control frame is implemented one by one which is not good. We may also reduce number of time the stack is converted
+   **A**: In current implementation the control frame is implemented one by one which is not good. We may also reduce number of time the stack is converted
 
-2. Q: There are two stacks growing from top and bottom. You chain the top one, ist there room for chaining in the bottom one?
+2. **Q**: There are two stacks growing from top and bottom. You chain the top one, ist there room for chaining in the bottom one?
 
-   A: When the argument is placed in memody the stack frame must extend. If you do that the internal stack must move and it's not effective.
+   **A**: When the argument is placed in memody the stack frame must extend. If you do that the internal stack must move and it's not effective.
 
-3. Q: Call stack had become the the linked list. Ist this bi-directional?
+3. **Q**: Call stack had become the the linked list. Ist this bi-directional?
 
-   A: Yes, we're using bi-directional linked list. But we should actually be able to change it into single-directional one.
+   **A**: Yes, we're using bi-directional linked list. But we should actually be able to change it into single-directional one.
 
+## Eric Hodel, Ezekiel Templin - Devly, a multi-service development environment
+
+### Intro
+
+API was initially made of a few small components and had a small development team. Soon it started growing and getting more complicated. Also, components were written in different technologies. It was becoming hard to keep all developers up to date with a proper environment.
+
+### Notes
+
+What can be done to solve the problem of maintaining a good development environment?
+
+We want our environment to be:
+
+- Reliable
+- Accessible
+- Maintainable
+- Composable
+- Reproducible
+
+Only those 5 features together will provide us with a smooth experience. We will see how those features have been implemented in Devly.
+
+Devly is build around images that consists of smaller app specific images.
+
+![devly](media/devly.jpg)
+
+Images are wrapped in services which know what command should be executed. It also alows you to share files with host os and interact with network interfaces. Many services may use the same image (think rails and sidekiq for the same application).
+
+Services may then be organised into Racks that allow to run a few services at the same time. Sometimes it's not necessary to run all services so you can easily create another rack that only runs ones you need.
+
+If you need to share some configuration between racks that's where you can use a Library.
+
+Let's start by setting up devly and see how it works. All you need to do is execute `devly setup repo_url`. After the setup is complete you can see running services with `devly info`. Now, we can create a rack. The command to do this is `devly up`. After you're done with your work you can stop rack with `devly down`.
+
+If somebody made changes to one of the images and you need to update it you can simply execute `devly pull image_name`. Since devly already knows about your repositories the change will be applied automatically.
+
+Sometimes you may want to execute some custom commands inside running rack. To do this we can use `devly exec` command. If we're not sure about image structure we can always execute bash and explore what's going on. If we have some commands that we execute often (for example migrations or tests) we can use Saved Commands feature for this. It lets you easily define service and a command to execute on it. Then you just have to use `devly run` to execute one of your saved commands.
+
+In bigger projects we sometimes need to have some cross-team collaboration. To change the image for one of the images we can tell devly to use our local changes for this one. This allows us to pull any branch we need and rebuild an image with it.
+
+With the above commands it's easy for one team to use other team work without having to learn the technology they use. Devly can also be used for CI and testing.
+
+Devly is not yet open source, but it's getting there soon. 
