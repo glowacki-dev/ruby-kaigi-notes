@@ -146,7 +146,7 @@ With the above commands it's easy for one team to use other team work without ha
 
 Devly is not yet open source, but it's getting there soon. 
 
-## Marc-André Lafortune - Deep into Ruby Code Coverage
+## Marc-André Lafortune - "Deep into Ruby Code Coverage"
 
 ### Intro
 
@@ -209,3 +209,36 @@ The deep-cover gem works well for now and there are a lot of features comming up
 
    **A**: Not to Coveralls. We've talked to maintainers of simplecov and they said the integration is possible
 
+## Yoh Osaki - "How to get the dark power from ISeq"
+
+### Intro
+
+Idea to use ISeq for new things. But it's an internal API and it would probably stay that way, so it's easier to make changes.
+
+But there may be people who would like to build simething with ISeq. Trying to write documentation for ISeq. To know what to write about it's best to first use it.
+
+You can see the [source code here](https://github.com/youchan/iseq_builder)
+
+### Notes
+
+What is ISeq? Ruby source is interpreted by ruby parser and is compiled into Instruction Sequence (ISeq) which is executed by RubyVM. So, ISeq is a cross-section between parser and a virutal machine, therefore it's used internally.
+
+In ruby standard library you can find `RubyVM::InstructionSequence` which gives you methods like `compile`, `disasm`, `to_a`, `load_from_binary` and `to_binary`.
+
+Using `compile` and `disasm` allows us to easily see how the stack machine is about to execute our code. With `compile` and `to_a` we can get an ISqu Simple Data format for our code. It can tell us more than just the instructions. And then we have `to_binary` that will basically return us binary code of our program. This code can be then used with `load_from_binary`.
+
+![stack_machine](media/stack_machine.jpg)
+
+To create our own ISeq we can either write code and use `compile` or `load_from_binary`. The former one is what happens when we simply write ruby so it won't help us really dig into the topic. So the only other option left is modifying binary output.
+
+After analyzing the ISeq structure and internal object blocks we can get an idea of where should we look for different data. Based on that knowledge the ISeq Builder has been created. This helps us write ISeq code using Ruby. 
+
+![iseq_structure](media/iseq_structure.jpg)
+
+[Demo of using ISeq Builder for creating a brainf*ck compiler]
+
+It's worth noting that ISeq binary is expressed as C structures and there may be incompatibilities between 32 and 64 bit architecture.
+
+To dive into ISeq further we could create another tool - [YASM](https://github.com/ko1/rubyhackchallenge/tree/master/yasm) which helps us working with ISeq Simple Data Formats objects.
+
+What would ISeq standarization bring us? With proper documentation it would be possible to run different languages on RubyVM, but it would also enable other virtual machines to be implemented. Just like there are many languages running on JVM and there are many languages compiling into LLVM. This could open way for new ruby dialects (such as one with types definitions) or VMs specialised in one selected task (data processing etc).
