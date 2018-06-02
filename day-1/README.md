@@ -42,7 +42,7 @@ With all things mentioned earlier ruby gives you high productivity and a great c
 
    **A**: Because in the future type annotations will most likely be unnecessary and become obsolete so there is no point adding them.
 
-## Aaron Patterson - Analyzing and Reducing Ruby Memory Usage
+## Aaron Patterson - "Analyzing and Reducing Ruby Memory Usage"
 ### Intro
 Practicing Japanese = 👏
 
@@ -89,7 +89,7 @@ Upgrade to Ruby 2.6!
 
 [No time for Q&A]
 
-## A practical type system for Ruby at Stripe
+## Dmitry Petrashko, Paul Tarjan, Nelson Elhage - "A practical type system for Ruby at Stripe"
 
 ### Intro
 

@@ -1,6 +1,6 @@
 # Day 2:
 
-## Kouhei Sutou - My way with Ruby (Keynote)
+## Kouhei Sutou - "My way with Ruby" (Keynote)
 
 ### Intro
 
@@ -34,7 +34,7 @@ For the presentation tool we'll also need an easy way to install. The easiest wa
 
 We've also looked at different libraries related to working with text (internationalization, full text search, text extraction etc), data processing (CSV and Apache Arrow) and Computer Vision.
 
-## Kirk Haines - It's Rubies All The Way Down
+## Kirk Haines - "It's Rubies All The Way Down"
 
 ### Intro
 
@@ -76,7 +76,7 @@ Nowadays it's possible to use mature, well known tools written in Ruby to handle
 
    **A**: The answer may be similar to the previous one. Most people probably thought that it's not the best language for the job
 
-## Koichi ITO - Improve Ruby coding style rules and Lint
+## Koichi ITO - "Improve Ruby coding style rules and Lint"
 
 ### Intro
 
@@ -102,7 +102,7 @@ The more people use your cop the more likely you are to find bugs and edge cases
 
 For example let's take a custom cop created by rails and used in their repository. After exporting it to RuboCop repository it would be possible for anyone using rails to keep the same style. Then, rails could drop their own implementation and actually use one that comes with rubocop. This allows whole community to write better code.
 
-## Julian Nadeau - Scaling Teams using Tests for Productivity and Education
+## Julian Nadeau - "Scaling Teams using Tests for Productivity and Education"
 
 ### Intro
 
@@ -169,7 +169,7 @@ Since version 1.13 bundler has support for plugins. They can be used for banning
 
    **A**: No, we run it in CI and only on code that changed.
 
-## Soutaro Matsumoto - Ruby Programming with Type Checking
+## Soutaro Matsumoto - "Ruby Programming with Type Checking"
 
 ### Intro
 
@@ -207,7 +207,7 @@ To make it faster to add steep to the existing projects, there is a scaffolding 
 
    **A**: I decided it'll be better if programmers wrote all the types to have more control over it
 
-## Uchio KONDO - How Ruby Survives in the Cloud Native World
+## Uchio KONDO - "How Ruby Survives in the Cloud Native World"
 
 ### Notes
 
@@ -248,7 +248,7 @@ What will the future bring us? Kubernetes will become a standard way of controli
 
    **A**: [The answer was in Japanese, so I can't help you here]
 
-## Yusuke Endoh - Type Profiler: An analysis to guess type signatures
+## Yusuke Endoh - "Type Profiler: An analysis to guess type signatures"
 
 ### Intro
 

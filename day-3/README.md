@@ -104,7 +104,7 @@ We have to keep in mind that ruby memory is managed in four layers. Apart from R
 
    **A**: Yes, we're using bi-directional linked list. But we should actually be able to change it into single-directional one.
 
-## Eric Hodel, Ezekiel Templin - Devly, a multi-service development environment
+## Eric Hodel, Ezekiel Templin - "Devly, a multi-service development environment"
 
 ### Intro
 
@@ -145,3 +145,67 @@ In bigger projects we sometimes need to have some cross-team collaboration. To c
 With the above commands it's easy for one team to use other team work without having to learn the technology they use. Devly can also be used for CI and testing.
 
 Devly is not yet open source, but it's getting there soon. 
+
+## Marc-André Lafortune - Deep into Ruby Code Coverage
+
+### Intro
+
+What is code coverage? It's a way of checking if your tests are sufficient. A line that was executed at least once is considered "covered". With code coverage it's easy to discover unused code or code with missing tests.
+
+### Notes
+
+We can consider different coverage types.
+
+- Method coverage - counts how many methods have been executed. It doesn't measue what's inside of them.
+
+- Line coverage - counts how many lines have been executed. But what about something like this
+
+  ```ruby
+  def foo(something: false)
+    bar if something
+  end
+  
+  # test
+  expect(foo).to ...
+  ```
+
+  It will report 100% line coverage, but we can see that not the whole line was executed
+
+- Node coverage - counts executed nodes in the AST (abstract syntax tree)
+
+- Branch coverage - in some cases we may have 100% of node coverage but only because our code behaves differently for specific logic conditions. Branch coverage makes sure that we've tested all possible outcomes
+
+We can see that branch coverage is the most in-depth so that may be something we want. And it has partial support since Ruby 2.5 and will have even better in 2.6. But you could have been using it since Ruby 2.1 with [deep-cover](https://github.com/deep-cover/deep-cover) gem.
+
+![deep_cover_demo](media/deep_cover_demo.jpg)
+
+Because branch coverage were missing from the previous versions of Ruby a lot of popular libraries are not actually tested properly even though they often have really high coverage.
+
+With deep-cover it's easy to find examples of untested guard clauses, endge cases and even unused scopes.
+
+But does it make sense to use deep-cover if we have some branch coverage support in MRI already? It turns out that MRI is still missing node coverage and doesn't actually cover all kinds of branches that deep-cover does.
+
+![mri_comparison](media/mri_comparison.jpg)
+
+![mri_comparison_2](media/mri_comparison_2.jpg)
+
+If you're already using a library like `simplecov` there is an easy way to migrate to deep-cover with their `builtin_takeover` module.
+
+Ok, so how does this work under the hood?
+
+Of course we need counters to keep track of how many times we've been in any specific point in code. While MRI tracks line coverage it's happening on C level, but deep-cover simply appends ruby counter incrementation before each line of code. But it doesn't have to track every line, because some lines are always executed together. To rewrite the code, deep-cover uses the [parser gem](https://github.com/whitequark/parser). Based on those counters further information can be extracted.
+
+![deep_cover_counters](media/deep_cover_counters.jpg)
+
+Tracking method calls and other more complex syntax requires deep-cover to do some more complex rewritting. Trackers have to be inserted between specific steps of code execution.
+
+In the end the whole idea is as simple as putting trackers/counters in every place where a control flow could be interrupted. This gives us an accurate measure of what parts of code were actually executed.
+
+The deep-cover gem works well for now and there are a lot of features comming up.
+
+### Q&A
+
+1. **Q**: Have you been talking to somebody from Coveralls?
+
+   **A**: Not to Coveralls. We've talked to maintainers of simplecov and they said the integration is possible
+
