@@ -1,6 +1,6 @@
 # Day 3:
 
-## Benoit Daloze - Parallel and Thread-Safe Ruby at High-Speed with TruffleRuby (Keynote)
+## Benoit Daloze - "Parallel and Thread-Safe Ruby at High-Speed with TruffleRuby" (Keynote)
 
 ### Notes
 
@@ -51,4 +51,56 @@ Try out TruffleRuby by installing it with your ruby manager of choice.
 3. Q: How does the memory usage differ between the implementations?
 
    A: SubstrateVM has bettter memory usage than JVM version.
+
+## Keita Sugiyama, Martin J. Dürst - "Grow and Shrink - Dynamically Extending the Ruby VM Stack"
+
+### Intro
+
+Contributions regarding Unicode for Ruby
+
+### Notes
+
+There are more and more cores available in modern CPUs, but Ruby is still struggling with multi-threading. Each Ruby VM thread needs it's own stack. They are fixed in size to 1MB in order to avoid stack overflow. But the more threads you have the more memory you'll need just for those stacks.
+
+Ruby VM actually uses two stacks. The first one is Call Stack which constains control frames (one per invocation). You'll be able to preview this stack with [feature #14801](https://bugs.ruby-lang.org/issues/14801). The other stack that is growing from the bottom is internal stack. It's used for executing instructions and there is one frame created per invocation.
+
+![internal_stack](media/internal_stack.jpg)
+
+The idea of Stack Extension was proposed by Koichi Sasada in 2016 and has been worked on since. When a potential stack overflow is detected we can double the stack size. 
+
+Because the stacks move we'll have to take care of internal stack pointers as they will become invalid. Depending on pointer type we'll either adjust it's target or change the referencing method. For example for local variables we could change method from using direct pointers into using offset from start of stack. Conversion between pointer and offset is quite easy to perform.
+
+![stack_extension](media/stack_extension.jpg)
+
+There is one more problem with Ruby methods arguments. When passing them to C functions, they won't expect their position to change. We can tackle this by copying the values into a secure memory area.
+
+While developing this feature there was a problem with debugging. Stack overflows happen too late and there is no access to the original stack. Instead of removing them we'll just mark them as unsused so we can preview them. The other problem is that stack extensions happened to rarely. The solution was to manually force stack extensions more frequently.
+
+In the end all tests have passed, so it seems that there is a fully functioning implementation ready.
+
+We can now check the impact on execution speed. On average the execution is 18% slower, possibly because we now use indirect access for call stack which requires more time. If we were able to keep call stack in the same place we could avoid the slowdown.
+
+A new methodology was proposed. Instead of stretching we could use chaining (inspired by Lua's implementation). With chaining there is average of only 6% slowdown. Chaining is slower because we still have to move internal stack and copy arguments to C functions.
+
+With dynamic stack size we could now change the initial stack size. It has almost no influence on execution speed but helps keep memory usage lower. In current implementation the initial stack size has been lowered from 1MB to 1KB. This allowed 40% reduction of memory usage. And it seems that the smaller the initial size, the greater the memory saving can be achieved.
+
+![stacks_memory](media/stacks_memory.jpg)
+
+But as it turns out, memory usage during tests was much lower than expected. With 10k threads and 1MB stack size we'll expect 10GB memory usage, but it was close to 250MB. (why? It was explained on the slides but they were changing too fast) 
+
+We have to keep in mind that ruby memory is managed in four layers. Apart from Ruby VM layer that we're considering, there is also allocator (things like glib malloc), operating system (virtual memory) and hardware layer (caching etc).
+
+### Q&A
+
+1. Q: What methods exist for possible speed improvements?
+
+   A: In current implementation the control frame is implemented one by one which is not good. We may also reduce number of time the stack is converted
+
+2. Q: There are two stacks growing from top and bottom. You chain the top one, ist there room for chaining in the bottom one?
+
+   A: When the argument is placed in memody the stack frame must extend. If you do that the internal stack must move and it's not effective.
+
+3. Q: Call stack had become the the linked list. Ist this bi-directional?
+
+   A: Yes, we're using bi-directional linked list. But we should actually be able to change it into single-directional one.
 
